@@ -1,7 +1,7 @@
 # Read Me First
 The following was discovered as part of building this project:
 
-* The original package name 'com.matias|.taskly-api' is invalid and this project uses 'com.matias.taskly_api' instead.
+* The original package name 'com.matias|.taskly-api' is invalid and this project uses 'com.matias.taskly' instead.
 
 # Getting Started
 
