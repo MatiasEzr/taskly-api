@@ -44,26 +44,44 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationErrors(
             MethodArgumentNotValidException ex,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
 
-        // Extrae todos los errores de validacion
+        /*
+         * Obtiene todos los errores de validación
+         * generados por anotaciones como:
+         * @NotBlank, @Size, @Email, etc.
+         */
         List<String> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                // error.getField() -> nombre del campo (ej: title)
-                // error.getDefaultMessage() -> mensaje de la anotacion (@NotBlank, etc.)
+
+                /*
+                 * Construye mensajes con formato:
+                 * campo: mensaje
+                 *
+                 * Ejemplo:
+                 * title: no debe estar vacío
+                 */
+                .map(error ->
+                        error.getField() + ": " + error.getDefaultMessage()
+                )
+
+                // Convierte el stream en una lista
                 .toList();
 
+        /*
+         * Construye una respuesta de error personalizada
+         */
         ApiError error = new ApiError(
                 "VALIDATION_ERROR",
-                String.join(", ", errors),
-                // Une todos los errores en un solo string
-                request.getRequestURI(),
-                Instant.now()
+                String.join(", ", errors), // Une todos los errores
+                request.getRequestURI(),   // Endpoint que produjo el error
+                Instant.now()              // Fecha/hora del error
         );
 
+        /*
+         * Devuelve HTTP 400 BAD REQUEST
+         */
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
@@ -94,6 +112,7 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
+
 
 
 }

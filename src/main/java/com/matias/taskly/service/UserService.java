@@ -5,19 +5,23 @@ import com.matias.taskly.exceptions.InvalidCredentialsException;
 import com.matias.taskly.exceptions.UserNotFoundException;
 import com.matias.taskly.model.User;
 import com.matias.taskly.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    //Se inyecta una instancia de Bcrypt
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public User loginUser(String email, String password) {
+    //No necesario, login manejado por Spring Security
+/*    public User loginUser(String email, String password) {
         // Si el usuario no existe → lanza UserNotFoundException → GlobalExceptionHandler devuelve 404
         User user = userRepository.findByEmail(email).orElseThrow( () -> new UserNotFoundException(email));
 
@@ -28,7 +32,9 @@ public class UserService {
 
         return user;
 
-    }
+    }*/
+
+    /*Registra un usuario aplicando Bcrypt a la contraseña*/
 
     public User registerUser(User user) {
         //Si ya existe el email, mandamos la excepcion
@@ -36,6 +42,10 @@ public class UserService {
             throw new ExistEmailException(user.getEmail());
         }
 
+        //Le aplicamos Bcrypt al password plano y lo seteamos en el user
+        String passwordPlano= user.getPassword();
+
+        user.setPassword(passwordEncoder.encode(passwordPlano));
 
         //Devuelve el user con todos los valores seteados
         return userRepository.save(user);
