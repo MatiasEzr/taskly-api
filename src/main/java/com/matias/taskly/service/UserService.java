@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
-    //Se inyecta una instancia de Bcrypt
     private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
@@ -20,38 +19,43 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    //No necesario, login manejado por Spring Security
-/*    public User loginUser(String email, String password) {
-        // Si el usuario no existe → lanza UserNotFoundException → GlobalExceptionHandler devuelve 404
-        User user = userRepository.findByEmail(email).orElseThrow( () -> new UserNotFoundException(email));
+    /**
+     * Valida las credenciales del usuario para el login.
+     *
+     * No genera el JWT acá — esa responsabilidad es del Controller.
+     * El Service solo verifica que el usuario exista y que el password coincida.
+     *
+     * Nota: usamos passwordEncoder.matches() y NO .equals()
+     * porque el password en la BD es un hash BCrypt — nunca texto plano.
+     */
+    public User loginUser(String email, String password) {
 
-        // Si la password no coincide → lanza InvalidCredentialsException → GlobalExceptionHandler devuelve 401
-        if (!user.getPassword().equals(password)) {
+        // Si el usuario no existe → lanza UserNotFoundException → GlobalExceptionHandler devuelve 404
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+
+        // BCrypt compara el password plano del request contra el hash almacenado en la BD
+        // .equals() nunca funcionaría porque el hash cambia con cada encode
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new InvalidCredentialsException();
         }
 
         return user;
+    }
 
-    }*/
-
-    /*Registra un usuario aplicando Bcrypt a la contraseña*/
-
+    /**
+     * Registra un nuevo usuario aplicando BCrypt a la contraseña.
+     */
     public User registerUser(User user) {
-        //Si ya existe el email, mandamos la excepcion
-        if(userRepository.findByEmail(user.getEmail()).isPresent()){
+
+        // Si ya existe el email, lanzamos la excepción
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new ExistEmailException(user.getEmail());
         }
 
-        //Le aplicamos Bcrypt al password plano y lo seteamos en el user
-        String passwordPlano= user.getPassword();
+        // Encriptamos el password plano antes de guardar en la BD
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        user.setPassword(passwordEncoder.encode(passwordPlano));
-
-        //Devuelve el user con todos los valores seteados
         return userRepository.save(user);
     }
-
-
-
-
 }
