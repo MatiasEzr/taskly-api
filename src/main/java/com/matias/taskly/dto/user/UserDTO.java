@@ -1,4 +1,7 @@
 package com.matias.taskly.dto.user;
 
-public class UserDTO {
-}
+public record UserDTO(
+    Long id,
+    String nickname,
+    String email
+    ){}

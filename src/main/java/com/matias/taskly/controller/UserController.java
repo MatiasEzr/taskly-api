@@ -3,6 +3,7 @@ package com.matias.taskly.controller;
 import com.matias.taskly.dto.user.AuthResponseDTO;
 import com.matias.taskly.dto.user.LoginRequestDTO;
 import com.matias.taskly.dto.user.RegisterUserRequestDTO;
+import com.matias.taskly.dto.user.UserDTO;
 import com.matias.taskly.mapper.UserMapper;
 import com.matias.taskly.model.User;
 import com.matias.taskly.security.JwtService;
@@ -10,6 +11,7 @@ import com.matias.taskly.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -81,6 +83,15 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+
+
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> getMe(Authentication authentication) {
+        String email = authentication.getName();
+        User user = userService.findByEmail(email);
+        return ResponseEntity.ok(new UserDTO(user.getId(), user.getEmail(), user.getNickname()));
+    }
 
 
 }
