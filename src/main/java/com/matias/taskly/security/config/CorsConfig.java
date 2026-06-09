@@ -1,28 +1,30 @@
 package com.matias.taskly.security.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 // Marks this class as a Spring configuration class
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-    // Overrides the method used to configure CORS rules
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true); // necesario para OAuth2 con cookies
 
-        // Applies the CORS configuration to all endpoints/routes
-        registry.addMapping("/**")
-
-                // Allows requests only from this origin
-                // In this case, from a frontend running with Vite
-                .allowedOrigins("http://localhost:5173")
-
-                // Specifies the allowed HTTP methods
-                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-
-                // Allows all request headers
-                .allowedHeaders("*");
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
+
 }
