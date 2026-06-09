@@ -31,8 +31,7 @@ public class UserService {
     public User loginUser(String email, String password) {
 
         // Si el usuario no existe → lanza UserNotFoundException → GlobalExceptionHandler devuelve 404
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException(email));
+        User user = findByEmail(email);
 
         // BCrypt compara el password plano del request contra el hash almacenado en la BD
         // .equals() nunca funcionaría porque el hash cambia con cada encode
@@ -57,5 +56,26 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         return userRepository.save(user);
+    }
+
+    public User findByEmail(String email) {
+        // Si el usuario no existe → lanza UserNotFoundException → GlobalExceptionHandler devuelve 404
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado: " + email));
+
+        return user;
+    }
+
+
+    public User findOrCreateOAuthUser(String email, String nickname) {
+        return userRepository.findByEmail(email)
+                .orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setEmail(email);
+                    newUser.setNickname(nickname);
+                    newUser.setPassword("");  // usuario OAuth no tiene contraseña local
+                    // seteá los demás campos obligatorios que tenga tu entidad User
+                    return userRepository.save(newUser);
+                });
     }
 }
