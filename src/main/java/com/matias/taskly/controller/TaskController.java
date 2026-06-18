@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import com.matias.taskly.dto.task.TaskResponseDTO;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/tasks")
@@ -63,6 +64,22 @@ public class TaskController {
     public ResponseEntity<TaskResponseDTO> getTask(@PathVariable("taskId") Long taskId) {
         Task task = taskService.findTaskById(taskId);
         return ResponseEntity.ok(taskMapper.toResponseDTO(task));
+    }
+
+    @PatchMapping("/{taskId}/complete")
+    public ResponseEntity<TaskResponseDTO> setCompleted(
+            @PathVariable Long taskId,
+            @RequestBody Map<String, Boolean> body
+    ) {
+        Boolean completed = body.get("completed");
+
+        if (completed == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Task updatedTask = taskService.setCompleted(taskId, completed);
+
+        return ResponseEntity.ok(taskMapper.toResponseDTO(updatedTask));
     }
 
 

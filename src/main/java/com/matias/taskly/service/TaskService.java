@@ -8,6 +8,7 @@ import com.matias.taskly.repository.TaskRepository;
 import com.matias.taskly.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -71,6 +72,21 @@ public class TaskService {
         }
 
         taskRepository.deleteById(id);
+    }
+
+
+    public Task setCompleted(Long taskId, Boolean completed) {
+        Task task = findTaskById(taskId);
+
+        task.setCompleted(completed);
+
+        if (Boolean.TRUE.equals(completed)) {
+            task.setCompletedAt(LocalDateTime.now());
+        } else {
+            task.setCompletedAt(null);
+        }
+
+        return taskRepository.save(task);
     }
 
     /**
