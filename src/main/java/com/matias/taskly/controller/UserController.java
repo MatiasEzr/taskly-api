@@ -86,6 +86,17 @@ public class UserController {
 
 
 
+    /**
+     * Devuelve los datos del usuario autenticado a partir del JWT.
+     *
+     * Se usa principalmente después del login con Google OAuth2:
+     * el frontend recibe solo el token en la URL, llama a este endpoint
+     * con ese token en el header Authorization, y obtiene el id, email
+     * y nickname para completar el objeto de usuario en memoria.
+     *
+     * authentication.getName() devuelve el email porque así lo configuramos
+     * en JwtService — el subject del JWT es el email del usuario.
+     */
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getMe(Authentication authentication) {
         String email = authentication.getName();

@@ -5,6 +5,7 @@ import com.matias.taskly.exceptions.InvalidCredentialsException;
 import com.matias.taskly.exceptions.UserNotFoundException;
 import com.matias.taskly.model.User;
 import com.matias.taskly.repository.UserRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -77,5 +78,13 @@ public class UserService {
                     // seteá los demás campos obligatorios que tenga tu entidad User
                     return userRepository.save(newUser);
                 });
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteUser(String email){
+
+        User user = findByEmail(email); //findByEmail() ya lanza excepción si no existe
+
+        userRepository.delete(user);
     }
 }
