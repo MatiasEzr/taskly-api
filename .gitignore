@@ -35,3 +35,4 @@ src/main/resources/*.p12
 src/main/resources/*.jks
 src/main/resources/*.key
 src/main/resources/*.crt
+application.yaml

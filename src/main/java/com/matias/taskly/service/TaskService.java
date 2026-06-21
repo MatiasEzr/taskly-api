@@ -1,11 +1,15 @@
 package com.matias.taskly.service;
 
+import com.matias.taskly.config.TaskProperties;
 import com.matias.taskly.exceptions.TaskNotFoundException;
 import com.matias.taskly.exceptions.UserNotFoundException;
 import com.matias.taskly.model.Task;
 import com.matias.taskly.model.User;
 import com.matias.taskly.repository.TaskRepository;
 import com.matias.taskly.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,10 +20,12 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final TaskProperties taskProperties;
 
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository, TaskProperties taskProperties) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
+        this.taskProperties = taskProperties;
     }
 
     /**
@@ -106,19 +112,32 @@ public class TaskService {
 
 
     /**
-     * Get a List of task by user id.
+     * Gets a paginated page of tasks by user id.
      *
      * Business rules:
      * - The associated user must exist.
+     * - The page size is configured through TaskProperties.
      *
-     * @param id user identifier
-     * @return found list task from user id
+     * @param userId user identifier
+     * @param page page number requested by the client
+     * @return paginated tasks from user id
      * @throws UserNotFoundException if user does not exist
      */
-    public List<Task> findTasksByUserId(Long id) {
-        userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
-        return taskRepository.getTasksByUserId(id);
+    public Page<Task> findTasksByUserId(Long userId, int page) {
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        int safePage = Math.max(page, 0);
+
+        Pageable pageable = PageRequest.of(
+                safePage,
+                taskProperties.getPageSize()
+        );
+
+        return taskRepository.findByUserId(userId, pageable);
     }
+
+
 
 }

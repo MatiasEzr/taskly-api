@@ -7,6 +7,7 @@ import com.matias.taskly.model.Task;
 import com.matias.taskly.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -49,12 +50,15 @@ public class UserTaskController {
 
 
     @GetMapping("/{userId}/tasks")
-    public ResponseEntity<List<TaskResponseDTO>> getListTasksByUser(@PathVariable Long userId) {
+    public ResponseEntity<Page<TaskResponseDTO>> getListTasksByUser(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        Page<Task> tasksByUser = taskService.findTasksByUserId(userId, page);
 
-        List<Task> lstTasksByUser= taskService.findTasksByUserId(userId);
+        Page<TaskResponseDTO> response = tasksByUser.map(taskMapper::toResponseDTO);
 
-
-        return ResponseEntity.ok(taskMapper.toResponseDTOList(lstTasksByUser));
+        return ResponseEntity.ok(response);
     }
 
 
